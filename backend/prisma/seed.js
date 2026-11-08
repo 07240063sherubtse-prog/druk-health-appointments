@@ -180,19 +180,21 @@ async function main() {
   }
 
   const adminEmail = (process.env.ADMIN_EMAIL || 'admin@drukhealth.app').toLowerCase();
-  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail }, select: { id: true } });
-  if (!existingAdmin) {
-    await prisma.user.create({
-      data: {
+  const adminData = {
       name: 'System Administrator',
       email: adminEmail,
       phone: '+97517123456',
       passwordHash: await bcrypt.hash(adminPassword, 10),
       role: 'ADMIN',
       isVerified: true,
-      },
-    });
-  }
+      verificationToken: null,
+      verificationExpiresAt: null,
+  };
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    create: adminData,
+    update: adminData,
+  });
 
   console.log('Seed completed successfully.');
 }
