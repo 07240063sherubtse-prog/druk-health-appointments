@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm install && npm run build
+    buildCommand: npm run install-all && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
@@ -19,6 +19,10 @@ services:
         value: admin@drukhealth.app
       - key: ADMIN_PASSWORD
         generateValue: true
+      - key: BREVO_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
 
 databases:
   - name: druk-health-db
