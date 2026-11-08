@@ -115,7 +115,7 @@ router.post('/', validate(bookingSchema), async (req, res, next) => {
 
     const created = await prisma.$transaction(async (tx) => {
       const slotKey = `${doctor.id}:${payload.date}:${payload.time}`;
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${slotKey}, 0))`;
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${slotKey}, 0))::text AS lock_acquired`;
 
       const existingBooking = await tx.appointment.findFirst({
         where: {
