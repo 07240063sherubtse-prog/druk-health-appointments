@@ -179,7 +179,7 @@ async function main() {
     }
   }
 
-  const adminEmail = (process.env.ADMIN_EMAIL || 'admin@drukhealth.app').toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL || '07240063.sherubtse@rub.edu.bt').toLowerCase();
   const adminData = {
       name: 'System Administrator',
       email: adminEmail,
