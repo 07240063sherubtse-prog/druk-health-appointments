@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
+    "validate:database": "node src/config/validateDatabaseUrl.js",
     "build": "prisma generate --schema prisma/schema.prisma",
     "migrate:deploy": "prisma migrate deploy --schema prisma/schema.prisma",
     "seed": "node prisma/seed.js"

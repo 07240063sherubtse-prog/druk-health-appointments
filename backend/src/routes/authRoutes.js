@@ -20,6 +20,14 @@ function setAuthCookie(res, token) {
   });
 }
 
+function verificationDeliveryErrorMessage(error) {
+  const genericMessage = 'Verification email could not be sent. Check the email delivery configuration and try registering again.';
+  if (typeof error?.message === 'string' && /^Brevo email delivery failed with HTTP \d{3}\./.test(error.message)) {
+    return `Verification email could not be sent. ${error.message}`;
+  }
+  return genericMessage;
+}
+
 router.post('/register', validate(registerSchema), async (req, res, next) => {
   try {
     const data = req.body;
@@ -41,7 +49,7 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
           await emailService.sendVerificationEmail({ email: existing.email, token: verificationToken });
         } catch (error) {
           console.error('Registration verification email could not be sent.', error);
-          return res.status(503).json({ message: 'Verification email could not be sent. Check the email delivery configuration and try registering again.' });
+          return res.status(503).json({ message: verificationDeliveryErrorMessage(error) });
         }
       }
 
@@ -69,7 +77,7 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
         await emailService.sendVerificationEmail({ email: user.email, token: verificationToken });
       } catch (error) {
         console.error('Registration verification email could not be sent.', error);
-        return res.status(503).json({ message: 'Verification email could not be sent. Check the email delivery configuration and try registering again.' });
+        return res.status(503).json({ message: verificationDeliveryErrorMessage(error) });
       }
 
       return res.status(201).json({ message: 'If registration is available for this email, a verification link will be sent.' });

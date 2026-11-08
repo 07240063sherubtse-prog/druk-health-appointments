@@ -69,14 +69,36 @@ router.get('/admin-dashboard', authorize('ADMIN'), async (req, res) => {
 router.post('/', validate(bookingSchema), async (req, res, next) => {
   try {
     const payload = req.body;
-    const doctor = await prisma.doctor.findUnique({ where: { id: payload.doctorId }, include: { hospital: true } });
+    const directoryDoctor = getDoctorById(payload.doctorId);
+    const doctor = directoryDoctor
+      ? await prisma.doctor.findFirst({
+          where: { name: directoryDoctor.name, hospitalId: directoryDoctor.hospitalId },
+          include: { hospital: true },
+        })
+      : await prisma.doctor.findUnique({ where: { id: payload.doctorId }, include: { hospital: true } });
     const hospital = doctor?.hospital || getHospitalById(payload.hospitalId);
 
     if (!doctor || !hospital) {
       return res.status(404).json({ message: 'Doctor or hospital not found.' });
     }
 
-    const appointmentDate = new Date(`${payload.date}T00:00:00`);
+    if (payload.hospitalId !== hospital.id && payload.hospitalId !== directoryDoctor?.hospitalId) {
+      return res.status(400).json({ message: 'The selected doctor does not belong to this hospital.' });
+    }
+
+    const appointmentDate = new Date(`${payload.date}T00:00:00.000Z`);
+    const existingBooking = await prisma.appointment.findFirst({
+      where: {
+        doctorId: doctor.id,
+        date: appointmentDate,
+        startTime: payload.time,
+        status: 'BOOKED',
+      },
+      select: { id: true },
+    });
+    if (existingBooking) {
+      return res.status(409).json({ message: 'That appointment time has already been booked. Please choose another time.' });
+    }
     const storedAppointment = {
       id: `apt-${Date.now()}`,
       patientId: req.user.id,
@@ -94,8 +116,6 @@ router.post('/', validate(bookingSchema), async (req, res, next) => {
       createdAt: new Date().toISOString(),
     };
 
-    appointments.push(storedAppointment);
-
     const created = await prisma.appointment.create({
       data: {
         patient: { connect: { id: req.user.id } },
@@ -107,16 +127,23 @@ router.post('/', validate(bookingSchema), async (req, res, next) => {
         reason: payload.reason,
         status: 'BOOKED',
       },
+      include: { doctor: { include: { hospital: true } }, patient: true },
     });
 
-    await emailService.sendAppointmentEmail({
-      email: req.user.email,
-      title: 'Appointment confirmed',
-      text: `Your appointment at ${hospital.name} with ${doctor.name} is booked for ${payload.date} at ${payload.time}.`,
-      html: `<p>Your appointment at <strong>${hospital.name}</strong> with <strong>${doctor.name}</strong> is booked for ${payload.date} at ${payload.time}.</p>`,
-    });
+    appointments.push(storedAppointment);
 
-    return res.status(201).json({ appointment: normalizeAppointment({ ...created, id: created.id || storedAppointment.id }) });
+    try {
+      await emailService.sendAppointmentEmail({
+        email: req.user.email,
+        title: 'Appointment confirmed',
+        text: `Your appointment at ${hospital.name} with ${doctor.name} is booked for ${payload.date} at ${payload.time}.`,
+        html: `<p>Your appointment at <strong>${hospital.name}</strong> with <strong>${doctor.name}</strong> is booked for ${payload.date} at ${payload.time}.</p>`,
+      });
+    } catch (emailError) {
+      console.error('Appointment confirmation email could not be sent.', emailError);
+    }
+
+    return res.status(201).json({ appointment: normalizeAppointment(created) });
   } catch (error) {
     return next(error);
   }

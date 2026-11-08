@@ -5,5 +5,5 @@ export const bookingSchema = z.object({
   hospitalId: z.string().min(1, 'Hospital is required.'),
   date: z.string().min(1, 'Date is required.'),
   time: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format.'),
-  reason: z.string().trim().min(4, 'Reason must be at least 4 characters long.'),
+  reason: z.string().trim().min(3, 'Reason must be at least 3 characters long.'),
 });

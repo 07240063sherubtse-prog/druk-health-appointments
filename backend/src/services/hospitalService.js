@@ -116,7 +116,14 @@ export const hospitalSeed = [
 export function getNearbyHospitals({ lat, lng, radiusKm = 50, search = '' }) {
   let matches = [...hospitalSeed];
 
-  if (lat && lng) {
+  if (search) {
+    const query = search.trim().toLowerCase();
+    matches = matches.filter(
+      (hospital) =>
+        hospital.name.toLowerCase().includes(query) ||
+        hospital.dzongkhag.toLowerCase().includes(query)
+    );
+  } else if (lat && lng) {
     matches = matches
       .map((hospital) => ({
         ...hospital,
@@ -124,15 +131,6 @@ export function getNearbyHospitals({ lat, lng, radiusKm = 50, search = '' }) {
       }))
       .filter((hospital) => hospital.distanceKm <= radiusKm)
       .sort((a, b) => a.distanceKm - b.distanceKm);
-  }
-
-  if (search) {
-    const query = search.toLowerCase();
-    matches = matches.filter(
-      (hospital) =>
-        hospital.name.toLowerCase().includes(query) ||
-        hospital.dzongkhag.toLowerCase().includes(query)
-    );
   }
 
   return matches.map(({ distanceKm, ...hospital }) => hospital);

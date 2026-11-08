@@ -3,7 +3,7 @@ import { getDoctorSlotsForDate } from '../services/slotService.js';
 
 const router = express.Router();
 
-router.get('/:doctorId', (req, res) => {
+router.get('/:doctorId', async (req, res, next) => {
   const { doctorId } = req.params;
   const { date } = req.query;
 
@@ -11,8 +11,12 @@ router.get('/:doctorId', (req, res) => {
     return res.status(400).json({ message: 'A date is required.' });
   }
 
-  const slots = getDoctorSlotsForDate(doctorId, String(date));
-  return res.json({ slots });
+  try {
+    const slots = await getDoctorSlotsForDate(doctorId, String(date));
+    return res.json({ slots });
+  } catch (error) {
+    return next(error);
+  }
 });
 
 export default router;
