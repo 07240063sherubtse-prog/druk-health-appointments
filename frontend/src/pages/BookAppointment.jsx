@@ -68,7 +68,7 @@ export default function BookAppointment() {
         time,
         reason,
       });
-      setMessage(`Appointment booked successfully. ID: ${response.data.appointment.id}`);
+      setMessage(`Appointment confirmed automatically. ID: ${response.data.appointment.id}`);
     } catch (error) {
       const response = error.response?.data;
       const fieldErrors = response?.details?.map(({ path, message: detail }) => `${path}: ${detail}`) || [];

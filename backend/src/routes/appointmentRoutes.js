@@ -96,18 +96,6 @@ router.post('/', validate(bookingSchema), async (req, res, next) => {
       return res.status(409).json({ message: 'That time is unavailable. Refresh the available times and choose another slot.' });
     }
     const nextDate = new Date(appointmentDate.getTime() + 24 * 60 * 60 * 1000);
-    const existingBooking = await prisma.appointment.findFirst({
-      where: {
-        doctorId: doctor.id,
-        date: { gte: appointmentDate, lt: nextDate },
-        startTime: payload.time,
-        status: 'BOOKED',
-      },
-      select: { id: true },
-    });
-    if (existingBooking) {
-      return res.status(409).json({ message: 'That appointment time has already been booked. Please choose another time.' });
-    }
     const storedAppointment = {
       id: `apt-${Date.now()}`,
       patientId: req.user.id,
@@ -125,19 +113,39 @@ router.post('/', validate(bookingSchema), async (req, res, next) => {
       createdAt: new Date().toISOString(),
     };
 
-    const created = await prisma.appointment.create({
-      data: {
-        patient: { connect: { id: req.user.id } },
-        doctor: { connect: { id: doctor.id } },
-        hospitalId: hospital.id,
-        date: appointmentDate,
-        startTime: payload.time,
-        endTime: addMinutes(payload.time, 30),
-        reason: payload.reason,
-        status: 'BOOKED',
-      },
-      include: { doctor: { include: { hospital: true } }, patient: true },
+    const created = await prisma.$transaction(async (tx) => {
+      const slotKey = `${doctor.id}:${payload.date}:${payload.time}`;
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${slotKey}, 0))`;
+
+      const existingBooking = await tx.appointment.findFirst({
+        where: {
+          doctorId: doctor.id,
+          date: { gte: appointmentDate, lt: nextDate },
+          startTime: payload.time,
+          status: 'BOOKED',
+        },
+        select: { id: true },
+      });
+      if (existingBooking) return null;
+
+      return tx.appointment.create({
+        data: {
+          patient: { connect: { id: req.user.id } },
+          doctor: { connect: { id: doctor.id } },
+          hospitalId: hospital.id,
+          date: appointmentDate,
+          startTime: payload.time,
+          endTime: addMinutes(payload.time, 30),
+          reason: payload.reason,
+          status: 'BOOKED',
+        },
+        include: { doctor: { include: { hospital: true } }, patient: true },
+      });
     });
+
+    if (!created) {
+      return res.status(409).json({ message: 'That appointment time was just booked by someone else. Choose another available time.' });
+    }
 
     appointments.push(storedAppointment);
 
@@ -152,7 +160,10 @@ router.post('/', validate(bookingSchema), async (req, res, next) => {
       console.error('Appointment confirmation email could not be sent.', emailError);
     }
 
-    return res.status(201).json({ appointment: normalizeAppointment(created) });
+    return res.status(201).json({
+      message: 'Appointment confirmed automatically. No receptionist approval is required.',
+      appointment: normalizeAppointment(created),
+    });
   } catch (error) {
     return next(error);
   }

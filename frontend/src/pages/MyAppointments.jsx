@@ -19,7 +19,7 @@ export default function MyAppointments() {
                 <div className="font-display text-2xl text-ink">{appointment.reason}</div>
                 <p className="text-slate-600">{appointment.doctorName || appointment.doctorId} • {appointment.date} at {appointment.time}</p>
               </div>
-              <span className="rounded-full bg-saffron/20 px-3 py-1 text-sm font-semibold text-maroon">{appointment.status}</span>
+              <span className="rounded-full bg-saffron/20 px-3 py-1 text-sm font-semibold text-maroon">{appointment.status === 'BOOKED' ? 'Confirmed' : appointment.status}</span>
             </div>
           </div>
         )) : <div className="rounded-[28px] border border-maroon/10 bg-white p-8 text-slate-600">No appointments yet.</div>}
