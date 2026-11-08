@@ -113,7 +113,23 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
     }
 
     if (!user.isVerified) {
-      return res.status(403).json({ message: 'Please verify your email before logging in.' });
+      const verificationToken = randomToken();
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          verificationToken: hashToken(verificationToken),
+          verificationExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        },
+      });
+
+      try {
+        await emailService.sendVerificationEmail({ email: user.email, token: verificationToken });
+      } catch (emailError) {
+        console.error('Login verification email could not be sent.', emailError);
+        return res.status(503).json({ message: verificationDeliveryErrorMessage(emailError) });
+      }
+
+      return res.status(403).json({ message: 'Please verify your email before logging in. We sent you a new verification link.' });
     }
 
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, env.JWT_SECRET, { expiresIn: '8h' });

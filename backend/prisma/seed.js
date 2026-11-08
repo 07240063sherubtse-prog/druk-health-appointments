@@ -181,20 +181,23 @@ async function main() {
 
   const adminEmail = (process.env.ADMIN_EMAIL || '07240063.sherubtse@rub.edu.bt').toLowerCase();
   const adminData = {
-      name: 'System Administrator',
-      email: adminEmail,
-      phone: '+97517123456',
-      passwordHash: await bcrypt.hash(adminPassword, 10),
-      role: 'ADMIN',
-      isVerified: true,
-      verificationToken: null,
-      verificationExpiresAt: null,
+    name: 'System Administrator',
+    email: adminEmail,
+    phone: '+97517123456',
+    passwordHash: await bcrypt.hash(adminPassword, 10),
+    role: 'ADMIN',
+    isVerified: true,
+    verificationToken: null,
+    verificationExpiresAt: null,
   };
-  await prisma.user.upsert({
-    where: { email: adminEmail },
-    create: adminData,
-    update: adminData,
-  });
+  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+  if (!existingAdmin) {
+    await prisma.user.create({ data: adminData });
+  } else if (existingAdmin.role === 'ADMIN') {
+    await prisma.user.update({ where: { id: existingAdmin.id }, data: adminData });
+  } else {
+    console.warn('Configured ADMIN_EMAIL belongs to an existing non-admin account. It was left unchanged; configure a different ADMIN_EMAIL.');
+  }
 
   console.log('Seed completed successfully.');
 }
