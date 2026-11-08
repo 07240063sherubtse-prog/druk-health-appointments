@@ -26,6 +26,25 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
     const email = data.email.toLowerCase();
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
+      if (!existing.isVerified) {
+        const verificationToken = randomToken();
+        const hashedVerificationToken = hashToken(verificationToken);
+        await prisma.user.update({
+          where: { id: existing.id },
+          data: {
+            verificationToken: hashedVerificationToken,
+            verificationExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+          },
+        });
+
+        try {
+          await emailService.sendVerificationEmail({ email: existing.email, token: verificationToken });
+        } catch (error) {
+          console.error('Registration verification email could not be sent.', error);
+          return res.status(503).json({ message: 'Verification email could not be sent. Check the email delivery configuration and try registering again.' });
+        }
+      }
+
       return res.status(201).json({ message: 'If registration is available for this email, a verification link will be sent.' });
     }
 
@@ -49,15 +68,8 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
       try {
         await emailService.sendVerificationEmail({ email: user.email, token: verificationToken });
       } catch (error) {
-        await prisma.user.deleteMany({
-          where: {
-            id: user.id,
-            isVerified: false,
-            verificationToken: hashedVerificationToken,
-          },
-        });
         console.error('Registration verification email could not be sent.', error);
-        return res.status(503).json({ message: 'Registration is temporarily unavailable because verification email could not be sent. Please try again later.' });
+        return res.status(503).json({ message: 'Verification email could not be sent. Check the email delivery configuration and try registering again.' });
       }
 
       return res.status(201).json({ message: 'If registration is available for this email, a verification link will be sent.' });

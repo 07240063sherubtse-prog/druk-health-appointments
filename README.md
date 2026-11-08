@@ -5,6 +5,7 @@ A Bhutan-focused hospital appointment booking system built with React, Express, 
 ## Features
 
 - Bhutanese branding and UX
+- English-language interface
 - Hospital search by geolocation and location text
 - Department and doctor browsing
 - Appointment booking with slot validation
@@ -17,7 +18,7 @@ A Bhutan-focused hospital appointment booking system built with React, Express, 
 
 ## Local development
 
-1. Configure the ignored `backend/.env` file with your local PostgreSQL `DATABASE_URL`, a strong `JWT_SECRET`, and `ADMIN_EMAIL`/`ADMIN_PASSWORD`. Set `EMAIL_API_KEY` (or `BREVO_API_KEY`) and a verified `EMAIL_FROM` address to enable email delivery. Never commit `.env` files or share their secrets.
+1. Configure the ignored `backend/.env` file with your local PostgreSQL `DATABASE_URL`, a strong `JWT_SECRET`, and `ADMIN_EMAIL`/`ADMIN_PASSWORD`. Set `EMAIL_API_KEY` (or `BREVO_API_KEY`) and a sender address verified in Brevo as `EMAIL_FROM` to enable email delivery. Without a Brevo API key, development mode prints verification links to the backend console. Never commit `.env` files or share their secrets.
 2. Install dependencies:
    npm run install-all
 3. Apply the database migration:
@@ -41,5 +42,4 @@ Render generates the administrator password and JWT secret. Retrieve and store t
 ## Notes
 
 - Default timezone is Asia/Thimphu (UTC+6).
-- Currency uses Nu.
 - Phone validation supports Bhutanese local and mobile formats.

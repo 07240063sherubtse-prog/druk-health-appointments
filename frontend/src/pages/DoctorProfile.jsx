@@ -27,9 +27,8 @@ export default function DoctorProfile() {
         </div>
       </div>
       <p className="text-slate-600">{doctor.bio}</p>
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl bg-cream p-4"><div className="text-sm uppercase tracking-[0.2em] text-saffron">Experience</div><div className="mt-2 font-display text-2xl text-maroon">{doctor.experienceYears}+</div></div>
-        <div className="rounded-2xl bg-cream p-4"><div className="text-sm uppercase tracking-[0.2em] text-saffron">Fee</div><div className="mt-2 font-display text-2xl text-maroon">Nu. {doctor.fee}</div></div>
         <div className="rounded-2xl bg-cream p-4"><div className="text-sm uppercase tracking-[0.2em] text-saffron">Dzongkhag</div><div className="mt-2 font-display text-2xl text-maroon">{doctor.dzongkhag}</div></div>
       </div>
       <Link to={`/book-appointment/${doctor.id}`} className="mt-8 inline-flex rounded-full bg-maroon px-6 py-3 font-semibold text-white">Book appointment</Link>

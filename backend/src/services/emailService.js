@@ -10,6 +10,10 @@ async function sendBrevoEmail({ to, subject, text, html }) {
     return { success: true, mode: 'console' };
   }
 
+  if (!env.EMAIL_FROM) {
+    throw new Error('Email delivery is not configured: set EMAIL_FROM to a verified Brevo sender address.');
+  }
+
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: {
@@ -26,7 +30,12 @@ async function sendBrevoEmail({ to, subject, text, html }) {
   });
 
   if (!response.ok) {
-    throw new Error(`Email provider error: ${response.status}`);
+    const hint = response.status === 401 || response.status === 403
+      ? ' Check BREVO_API_KEY.'
+      : response.status === 400
+        ? ' Check that EMAIL_FROM is verified in Brevo and the recipient address is valid.'
+        : '';
+    throw new Error(`Brevo email delivery failed with HTTP ${response.status}.${hint}`);
   }
 
   return { success: true, mode: 'brevo' };

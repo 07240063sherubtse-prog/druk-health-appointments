@@ -10,6 +10,6 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET || 'druk-health-secret',
   FRONTEND_URL: process.env.FRONTEND_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173',
   EMAIL_API_KEY: process.env.EMAIL_API_KEY || process.env.BREVO_API_KEY || '',
-  EMAIL_FROM: process.env.EMAIL_FROM || 'noreply@drukhealth.app',
+  EMAIL_FROM: process.env.EMAIL_FROM || '',
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'admin@drukhealth.app',
 };

@@ -1,28 +1,25 @@
 import { Link } from 'react-router-dom';
 import BhutanPattern from '../components/BhutanPattern';
-import { useLang } from '../context/LangContext';
 
 const highlights = [
   { label: '7 hospitals', detail: 'Across Bhutan' },
   { label: '24/7', detail: 'Support' },
-  { label: 'Nu.', detail: 'Transparent fees' },
+  { label: 'Free', detail: 'Appointments' },
 ];
 
 export default function Landing() {
-  const { t } = useLang();
-
   return (
     <div className="space-y-10">
       <section className="relative overflow-hidden rounded-[32px] border border-maroon/10 bg-gradient-to-r from-maroon via-[#8d2b2b] to-[#b74040] px-6 py-14 text-white shadow-soft md:px-10">
         <BhutanPattern />
         <div className="relative grid gap-8 md:grid-cols-2 md:items-center">
           <div>
-            <p className="mb-3 inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-saffron">{t('landing.greeting')}</p>
-            <h1 className="font-display text-5xl leading-tight">{t('landing.welcome')}</h1>
-            <p className="mt-4 max-w-lg text-lg text-white/90">{t('landing.subtitle')}</p>
+            <p className="mb-3 inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-saffron">Druk Health</p>
+            <h1 className="font-display text-5xl leading-tight">Healthcare in Bhutan</h1>
+            <p className="mt-4 max-w-lg text-lg text-white/90">Healthcare closer to every Dzongkhag</p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link to="/find-hospitals" className="rounded-full bg-saffron px-6 py-3 font-semibold text-maroon">{t('landing.ctaPrimary')}</Link>
-              <Link to="/register" className="rounded-full border border-white/40 px-6 py-3 font-semibold text-white">{t('landing.ctaSecondary')}</Link>
+              <Link to="/find-hospitals" className="rounded-full bg-saffron px-6 py-3 font-semibold text-maroon">Book an appointment</Link>
+              <Link to="/register" className="rounded-full border border-white/40 px-6 py-3 font-semibold text-white">Find a hospital</Link>
             </div>
           </div>
           <div className="rounded-[28px] bg-white/10 p-6 backdrop-blur-sm">

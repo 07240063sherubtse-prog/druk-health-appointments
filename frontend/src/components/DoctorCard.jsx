@@ -11,9 +11,8 @@ export default function DoctorCard({ doctor }) {
         </div>
       </div>
       <p className="mb-3 text-sm text-slate-600">{doctor.bio}</p>
-      <div className="mb-4 flex items-center justify-between text-sm font-medium text-maroon">
-        <span>{doctor.experienceYears}+ years</span>
-        <span>Nu. {doctor.fee}</span>
+      <div className="mb-4 text-sm font-medium text-maroon">
+        <span>{doctor.experienceYears}+ years experience</span>
       </div>
       <Link to={`/book-appointment/${doctor.id}`} className="inline-flex items-center rounded-full bg-saffron px-4 py-2 text-sm font-semibold text-maroon">Book now</Link>
     </div>
