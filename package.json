@@ -1,0 +1,18 @@
+{
+  "name": "druk-health-appointments",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "install-all": "npm install --prefix backend && npm install --prefix frontend",
+    "dev": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "start": "npm --prefix backend run migrate:deploy && npm --prefix backend run start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}

@@ -1,0 +1,6 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'>
+  <rect width='200' height='200' rx='100' fill='#E8A317'/>
+  <circle cx='100' cy='80' r='40' fill='#7A1F1F'/>
+  <path d='M40 160 Q100 110 160 160 L160 200 L40 200 Z' fill='#7A1F1F'/>
+  <text x='100' y='112' text-anchor='middle' font-family='Arial' font-size='32' fill='white' font-weight='700'>TD</text>
+</svg>

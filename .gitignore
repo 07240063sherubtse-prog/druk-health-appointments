@@ -1,0 +1,14 @@
+node_modules
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+backend/generated
+frontend/dist
+backend/dist
+coverage
+npm-debug.log*
+.DS_Store

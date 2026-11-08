@@ -1,0 +1,19 @@
+{
+  "nav": {
+    "home": "མགྲོན",
+    "findHospitals": "སྨན་ཁང་རྙེད་",
+    "myAppointments": "ངོས་ལེན",
+    "login": "ནང་འཇུག",
+    "register": "ཐོ་འགོད",
+    "profile": "གནས་སྡུད",
+    "doctorDashboard": "དཀར་ལྷན་གྱི་གདམ",
+    "adminDashboard": "བདག་སྐྱོང་"
+  },
+  "landing": {
+    "greeting": "Kuzuzangpo La",
+    "welcome": "Welcome",
+    "subtitle": "Healthcare closer to every Dzongkhag",
+    "ctaPrimary": "Book an appointment",
+    "ctaSecondary": "Find a hospital"
+  }
+}

@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum AppointmentStatus {
+  BOOKED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model User {
+  id                         String        @id @default(cuid())
+  name                      String
+  email                     String        @unique
+  phone                     String?
+  passwordHash              String?
+  role                      Role          @default(PATIENT)
+  isVerified                Boolean       @default(false)
+  verificationToken         String?
+  verificationExpiresAt     DateTime?
+  resetToken               String?
+  resetTokenExpiresAt     DateTime?
+  cidNumber                 String?
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
+
+  appointmentsAsPatient     Appointment[] @relation("PatientAppointments")
+}
+
+model Hospital {
+  id          String       @id @default(cuid())
+  name        String
+  dzongkhag   String
+  address     String
+  phone       String
+  latitude    Float
+  longitude   Float
+  image       String
+  description String?
+  createdAt   DateTime     @default(now())
+  departments Department[]
+  doctors     Doctor[]
+}
+
+model Department {
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+  name       String
+  doctors    Doctor[]
+}
+
+model Doctor {
+  id            String        @id @default(cuid())
+  hospitalId    String
+  hospital      Hospital       @relation(fields: [hospitalId], references: [id])
+  departmentId  String
+  department    Department    @relation(fields: [departmentId], references: [id])
+  name          String
+  specialization String
+  experienceYears Int
+  fee           Int
+  bio           String
+  photoUrl      String?
+  weeklyAvailability String?
+  createdAt     DateTime      @default(now())
+  appointments Appointment[]
+}
+
+model Appointment {
+  id                 String            @id @default(cuid())
+  patientId          String
+  patient            User              @relation("PatientAppointments", fields: [patientId], references: [id])
+  doctorId           String
+  doctor             Doctor            @relation(fields: [doctorId], references: [id])
+  hospitalId         String
+  status             AppointmentStatus @default(BOOKED)
+  date               DateTime
+  startTime          String
+  endTime            String
+  reason             String
+  reminder24hSent    Boolean           @default(false)
+  reminder2hSent     Boolean           @default(false)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  cancellationReason String?
+}

@@ -1,0 +1,15 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 750'>
+  <defs>
+    <linearGradient id='g' x1='0' x2='1'>
+      <stop offset='0%' stop-color='#7A1F1F'/>
+      <stop offset='100%' stop-color='#E8A317'/>
+    </linearGradient>
+  </defs>
+  <rect width='1200' height='750' fill='url(#g)'/>
+  <circle cx='180' cy='180' r='110' fill='rgba(255,255,255,0.12)'/>
+  <path d='M140 540 L200 400 L260 540 Z' fill='rgba(255,255,255,0.3)'/>
+  <path d='M900 540 L1000 330 L1090 540 Z' fill='rgba(255,255,255,0.18)'/>
+  <rect x='80' y='80' width='1040' height='590' rx='36' fill='none' stroke='rgba(255,255,255,0.35)' stroke-width='4'/>
+  <text x='600' y='400' text-anchor='middle' font-family='Georgia, serif' font-size='72' fill='white' letter-spacing='2'></text>
+  <text x='600' y='470' text-anchor='middle' font-family='Arial' font-size='24' fill='rgba(255,255,255,0.8)'>Hospital</text>
+</svg>

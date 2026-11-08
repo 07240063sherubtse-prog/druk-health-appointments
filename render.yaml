@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: druk-health-appointments
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: druk-health-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@drukhealth.app
+      - key: ADMIN_PASSWORD
+        generateValue: true
+
+databases:
+  - name: druk-health-db
+    databaseName: druk_health
+    user: druk_health
+    plan: free
+    region: oregon
