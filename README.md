@@ -17,18 +17,18 @@ A Bhutan-focused hospital appointment booking system built with React, Express, 
 
 ## Local development
 
-1. Copy backend/.env.example to backend/.env and fill values.
-2. Copy frontend/.env.example to frontend/.env if needed.
-3. Install dependencies:
+1. Configure the ignored `backend/.env` file with your local PostgreSQL `DATABASE_URL`, a strong `JWT_SECRET`, and `ADMIN_EMAIL`/`ADMIN_PASSWORD`. Set `EMAIL_API_KEY` (or `BREVO_API_KEY`) and a verified `EMAIL_FROM` address to enable email delivery. Never commit `.env` files or share their secrets.
+2. Install dependencies:
    npm run install-all
-4. Apply the database migration:
+3. Apply the database migration:
    cd backend && npx prisma migrate dev
-5. Seed the data:
+4. Seed the data:
    npm --prefix backend run seed
-6. Start the app:
+5. Start the app:
    npm run dev
 
 Frontend runs on http://localhost:5173 and the backend on http://localhost:3000.
+The frontend uses `/api` by default; set `VITE_API_BASE_URL` in `frontend/.env` only when the API is hosted at a different URL.
 
 ## Production deployment
 
