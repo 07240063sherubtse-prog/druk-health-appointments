@@ -1,4 +1,5 @@
 import { haversineDistanceKm } from '../utils/haversine.js';
+import { additionalHospitalDirectory } from '../data/additionalHospitalDirectory.js';
 
 export const hospitalSeed = [
   {
@@ -11,6 +12,7 @@ export const hospitalSeed = [
     longitude: 89.639,
     image: '/images/hospitals/jdwnrh-thimphu.svg',
     description: 'National referral hospital in Thimphu.',
+    searchTerms: ['JDWNRH', 'JDW National Referral Hospital'],
     departments: ['General Medicine', 'Cardiology', 'Dermatology', 'Traditional Medicine'],
     doctors: [
       { id: 'd1', name: 'Dr. Tshering Dorji', specialization: 'General Medicine', experienceYears: 12, fee: 450, bio: 'Provides primary care and chronic disease follow-up.', photoUrl: '/images/avatars/tshering-dorji.svg', schedule: { day: 'Monday', start: '09:00', end: '17:00', slotMinutes: 30 } },
@@ -27,6 +29,7 @@ export const hospitalSeed = [
     longitude: 89.388,
     image: '/images/hospitals/phuentsholing-general-hospital.svg',
     description: 'Regional hospital serving the south.',
+    searchTerms: ['Phuntsholing Hospital', 'Chukha', 'Phuntsholing'],
     departments: ['Paediatrics', 'Orthopaedics', 'General Medicine'],
     doctors: [
       { id: 'd3', name: 'Dr. Pema Lhamo', specialization: 'Paediatrics', experienceYears: 8, fee: 400, bio: 'Infant and child wellness care.', photoUrl: '/images/avatars/pema-lhamo.svg', schedule: { day: 'Tuesday', start: '09:00', end: '16:00', slotMinutes: 30 } },
@@ -43,6 +46,7 @@ export const hospitalSeed = [
     longitude: 91.2391,
     image: '/images/hospitals/eastern-regional-referral-hospital.svg',
     description: 'Regional referral center for eastern Bhutan.',
+    searchTerms: ['Mongar Hospital', 'Mongar ERRH'],
     departments: ['Gynaecology and Obstetrics', 'Dental'],
     doctors: [
       { id: 'd5', name: 'Dr. Kinley Penjor', specialization: 'Gynaecology and Obstetrics', experienceYears: 9, fee: 500, bio: 'Maternal and women’s health services.', photoUrl: '/images/avatars/kinley-penjor.svg', schedule: { day: 'Monday', start: '08:30', end: '15:30', slotMinutes: 30 } },
@@ -59,6 +63,7 @@ export const hospitalSeed = [
     longitude: 90.4837,
     image: '/images/hospitals/central-regional-referral-hospital.svg',
     description: 'Central Bhutan referral and emergency care hospital.',
+    searchTerms: ['Gelephu Regional Hospital', 'Gelephu CRR Hospital', 'Gelephu'],
     departments: ['Eye (Ophthalmology)', 'ENT'],
     doctors: [
       { id: 'd7', name: 'Dr. Ugyen Namgay', specialization: 'Ophthalmology', experienceYears: 13, fee: 600, bio: 'Eye care and vision screening.', photoUrl: '/images/avatars/ugyen-namgay.svg', schedule: { day: 'Tuesday', start: '09:00', end: '17:00', slotMinutes: 30 } },
@@ -91,6 +96,7 @@ export const hospitalSeed = [
     longitude: 91.5556,
     image: '/images/hospitals/trashigang-hospital.svg',
     description: 'Hospital for eastern dzongkhags and emergency care.',
+    searchTerms: ['Trashigang Hospital'],
     departments: ['General Medicine'],
     doctors: [
       { id: 'd11', name: 'Dr. Namgay Om', specialization: 'General Medicine', experienceYears: 10, fee: 440, bio: 'Primary care and referral support.', photoUrl: '/images/avatars/namgay-om.svg', schedule: { day: 'Monday', start: '09:00', end: '16:00', slotMinutes: 30 } }
@@ -106,12 +112,23 @@ export const hospitalSeed = [
     longitude: 89.8758,
     image: '/images/hospitals/punakha-hospital.svg',
     description: 'District hospital serving Punakha and nearby villages.',
+    searchTerms: ['Punakha Hospital'],
     departments: ['General Medicine'],
     doctors: [
       { id: 'd12', name: 'Dr. Rinzin Wangdi', specialization: 'Family Medicine', experienceYears: 8, fee: 430, bio: 'Family health and preventive medicine.', photoUrl: '/images/avatars/rinzin-wangdi.svg', schedule: { day: 'Tuesday', start: '10:00', end: '18:00', slotMinutes: 30 } }
     ]
   }
 ];
+
+hospitalSeed.push(...additionalHospitalDirectory.map((hospital) => ({
+  ...hospital,
+  image: '/images/hospitals/hospital-placeholder.svg',
+  description: 'Hospital location listed in Bhutan’s official national spatial data directory. Online doctor schedules are not available in this app yet.',
+  departments: [],
+  doctors: [],
+  bookingAvailable: false,
+  searchTerms: [hospital.name, hospital.dzongkhag, hospital.address],
+})));
 
 export function getNearbyHospitals({ lat, lng, radiusKm = 50, search = '' }) {
   let matches = [...hospitalSeed];
@@ -121,7 +138,8 @@ export function getNearbyHospitals({ lat, lng, radiusKm = 50, search = '' }) {
     matches = matches.filter(
       (hospital) =>
         hospital.name.toLowerCase().includes(query) ||
-        hospital.dzongkhag.toLowerCase().includes(query)
+        hospital.dzongkhag.toLowerCase().includes(query) ||
+        hospital.searchTerms?.some((term) => term.toLowerCase().includes(query))
     );
   } else if (lat && lng) {
     matches = matches

@@ -21,7 +21,9 @@ export default function Register() {
       setMessage('Registration successful. Please check your email to verify your account.');
       setTimeout(() => navigate('/login'), 1200);
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed.');
+      const response = err.response?.data;
+      const fieldErrors = response?.details?.map(({ path, message }) => `${path}: ${message}`) || [];
+      setError([response?.message || 'Registration failed.', ...fieldErrors].join(' '));
     } finally {
       setLoading(false);
     }

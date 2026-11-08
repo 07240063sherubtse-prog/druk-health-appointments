@@ -1,6 +1,7 @@
 import '../src/config/env.js';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { additionalHospitalDirectory } from '../src/data/additionalHospitalDirectory.js';
 
 const prisma = new PrismaClient();
 
@@ -82,6 +83,11 @@ const hospitals = [
     image: '/images/hospitals/punakha-hospital.svg',
     description: 'District hospital serving Punakha and nearby villages.',
   },
+  ...additionalHospitalDirectory.map((hospital) => ({
+    ...hospital,
+    image: '/images/hospitals/hospital-placeholder.svg',
+    description: 'Hospital location listed in Bhutan’s official national spatial data directory. Online doctor schedules are not available in this app yet.',
+  })),
 ];
 
 const departments = [
@@ -118,24 +124,28 @@ async function main() {
     throw new Error('Set ADMIN_PASSWORD before seeding.');
   }
 
-  await prisma.appointment.deleteMany();
-  await prisma.doctor.deleteMany();
-  await prisma.department.deleteMany();
-  await prisma.hospital.deleteMany();
-  await prisma.user.deleteMany();
-
   for (const entry of hospitals) {
-    await prisma.hospital.create({ data: entry });
+    await prisma.hospital.upsert({
+      where: { id: entry.id },
+      create: entry,
+      update: entry,
+    });
   }
 
   for (const deptName of departments) {
-    for (const hospital of hospitals) {
-      await prisma.department.create({
-        data: {
-          name: deptName,
-          hospital: { connect: { id: hospital.id } },
-        },
+    for (const hospital of hospitals.slice(0, 7)) {
+      const existingDepartment = await prisma.department.findFirst({
+        where: { hospitalId: hospital.id, name: deptName },
+        select: { id: true },
       });
+      if (!existingDepartment) {
+        await prisma.department.create({
+          data: {
+            name: deptName,
+            hospital: { connect: { id: hospital.id } },
+          },
+        });
+      }
     }
   }
 
@@ -147,8 +157,7 @@ async function main() {
       },
     });
 
-    await prisma.doctor.create({
-      data: {
+    const doctorData = {
         name: doctor.name,
         specialization: doctor.specialization,
         experienceYears: doctor.experienceYears,
@@ -158,20 +167,32 @@ async function main() {
         weeklyAvailability: JSON.stringify({ days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], start: '09:00', end: '17:00', slotMinutes: 30 }),
         hospital: { connect: { id: doctor.hospitalId } },
         department: { connect: { id: department.id } },
-      },
+    };
+    const existingDoctor = await prisma.doctor.findFirst({
+      where: { name: doctor.name, hospitalId: doctor.hospitalId },
+      select: { id: true },
     });
+    if (existingDoctor) {
+      await prisma.doctor.update({ where: { id: existingDoctor.id }, data: doctorData });
+    } else {
+      await prisma.doctor.create({ data: doctorData });
+    }
   }
 
-  await prisma.user.create({
-    data: {
+  const adminEmail = (process.env.ADMIN_EMAIL || 'admin@drukhealth.app').toLowerCase();
+  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail }, select: { id: true } });
+  if (!existingAdmin) {
+    await prisma.user.create({
+      data: {
       name: 'System Administrator',
-      email: (process.env.ADMIN_EMAIL || 'admin@drukhealth.app').toLowerCase(),
+      email: adminEmail,
       phone: '+97517123456',
       passwordHash: await bcrypt.hash(adminPassword, 10),
       role: 'ADMIN',
       isVerified: true,
-    },
-  });
+      },
+    });
+  }
 
   console.log('Seed completed successfully.');
 }

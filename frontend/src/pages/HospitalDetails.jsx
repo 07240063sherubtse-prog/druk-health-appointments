@@ -18,7 +18,7 @@ export default function HospitalDetails() {
   return (
     <div className="space-y-8">
       <div className="overflow-hidden rounded-[32px] border border-maroon/10 bg-white shadow-soft">
-        <img src={hospital.image} alt={hospital.name} className="h-64 w-full object-cover" />
+        <img src={hospital.image || '/images/hospitals/hospital-placeholder.svg'} alt={hospital.name} className="h-64 w-full object-cover" />
         <div className="p-8">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
@@ -50,6 +50,7 @@ export default function HospitalDetails() {
         <h2 className="font-display text-3xl text-maroon">Doctors</h2>
         <div className="mt-5 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {hospital.doctors?.map((doctor) => <DoctorCard key={doctor.id} doctor={doctor} />)}
+          {!hospital.doctors?.length && <p className="rounded-2xl bg-white p-5 text-slate-600 md:col-span-2 xl:col-span-3">Online appointment schedules are not available for this hospital yet. Please contact the hospital directly using the number above.</p>}
         </div>
       </div>
     </div>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">Hospital</title>
+  <desc id="desc">Illustration of a hospital building</desc>
+  <rect width="1200" height="520" fill="#f8f2e8"/>
+  <path d="M0 420h1200v100H0z" fill="#e9dfd0"/>
+  <path d="M320 420V180h560v240" fill="#fff" stroke="#7f1d1d" stroke-width="10"/>
+  <path d="M270 190h660L600 80z" fill="#7f1d1d"/>
+  <path d="M545 120h110v130H545z" fill="#f0a310"/>
+  <path d="M585 140h30v90h-30zM555 170h90v30h-90z" fill="#fff"/>
+  <g fill="#e7eef7" stroke="#a9b8cc" stroke-width="5">
+    <path d="M370 260h100v90H370zM550 280h100v90H550zM730 260h100v90H730z"/>
+  </g>
+  <path d="M500 420V355h200v65" fill="#7f1d1d"/>
+</svg>

@@ -4,7 +4,9 @@ import { prisma } from '../config/db.js';
 
 export function isHoliday(dateString) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return false;
-  const normalized = new Date(dateString + 'T00:00:00').toISOString().slice(0, 10);
+  const parsed = new Date(`${dateString}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== dateString) return false;
+  const normalized = parsed.toISOString().slice(0, 10);
   return holidays.includes(normalized);
 }
 
@@ -15,22 +17,23 @@ export async function getDoctorSlotsForDate(doctorId, dateString) {
   const doctor = await prisma.doctor.findFirst({
     where: { name: directoryDoctor.name, hospitalId: directoryDoctor.hospitalId },
     select: { id: true },
+  }) || await prisma.doctor.findFirst({
+    where: { name: directoryDoctor.name },
+    select: { id: true },
   });
-  if (!doctor) return [];
-
-  if (!dateString || isHoliday(dateString)) return [];
+  if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString) || isHoliday(dateString)) return [];
 
   const dateStart = new Date(`${dateString}T00:00:00.000Z`);
-  if (Number.isNaN(dateStart.getTime())) return [];
+  if (Number.isNaN(dateStart.getTime()) || dateStart.toISOString().slice(0, 10) !== dateString) return [];
   const dateEnd = new Date(dateStart.getTime() + 24 * 60 * 60 * 1000);
-  const bookedAppointments = await prisma.appointment.findMany({
+  const bookedAppointments = doctor ? await prisma.appointment.findMany({
     where: {
       doctorId: doctor.id,
       date: { gte: dateStart, lt: dateEnd },
       status: 'BOOKED',
     },
     select: { startTime: true },
-  });
+  }) : [];
   const bookedTimes = new Set(bookedAppointments.map(({ startTime }) => startTime));
 
   const schedule = directoryDoctor.schedule || { start: '09:00', end: '17:00', slotMinutes: 30 };

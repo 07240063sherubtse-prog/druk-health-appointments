@@ -10,7 +10,8 @@
     "install-all": "npm install --include=dev --prefix backend && npm install --include=dev --prefix frontend",
     "dev": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
     "build": "npm --prefix backend run build && npm --prefix frontend run build",
-    "start": "npm --prefix backend run migrate:deploy && npm --prefix backend run start"
+    "prestart": "npm --prefix backend run validate:database",
+    "start": "npm --prefix backend run migrate:deploy && npm --prefix backend run seed && npm --prefix backend run start"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"

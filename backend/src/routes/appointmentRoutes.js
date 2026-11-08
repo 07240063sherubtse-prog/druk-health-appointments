@@ -5,6 +5,7 @@ import { emailService } from '../services/emailService.js';
 import { validate } from '../middleware/validate.js';
 import { bookingSchema } from '../validators/appointment.js';
 import { prisma } from '../config/db.js';
+import { getDoctorSlotsForDate } from '../services/slotService.js';
 
 const router = express.Router();
 const appointments = [];
@@ -71,15 +72,18 @@ router.post('/', validate(bookingSchema), async (req, res, next) => {
     const payload = req.body;
     const directoryDoctor = getDoctorById(payload.doctorId);
     const doctor = directoryDoctor
-      ? await prisma.doctor.findFirst({
+      ? (await prisma.doctor.findFirst({
           where: { name: directoryDoctor.name, hospitalId: directoryDoctor.hospitalId },
           include: { hospital: true },
-        })
+        }) || await prisma.doctor.findFirst({
+          where: { name: directoryDoctor.name },
+          include: { hospital: true },
+        }))
       : await prisma.doctor.findUnique({ where: { id: payload.doctorId }, include: { hospital: true } });
     const hospital = doctor?.hospital || getHospitalById(payload.hospitalId);
 
     if (!doctor || !hospital) {
-      return res.status(404).json({ message: 'Doctor or hospital not found.' });
+      return res.status(503).json({ message: 'Online booking is not initialized for this doctor yet. Please contact the hospital or ask the administrator to initialize the appointment data.' });
     }
 
     if (payload.hospitalId !== hospital.id && payload.hospitalId !== directoryDoctor?.hospitalId) {
@@ -87,10 +91,15 @@ router.post('/', validate(bookingSchema), async (req, res, next) => {
     }
 
     const appointmentDate = new Date(`${payload.date}T00:00:00.000Z`);
+    const availableSlots = await getDoctorSlotsForDate(payload.doctorId, payload.date);
+    if (!availableSlots.some((slot) => slot.time === payload.time)) {
+      return res.status(409).json({ message: 'That time is unavailable. Refresh the available times and choose another slot.' });
+    }
+    const nextDate = new Date(appointmentDate.getTime() + 24 * 60 * 60 * 1000);
     const existingBooking = await prisma.appointment.findFirst({
       where: {
         doctorId: doctor.id,
-        date: appointmentDate,
+        date: { gte: appointmentDate, lt: nextDate },
         startTime: payload.time,
         status: 'BOOKED',
       },
