@@ -42,6 +42,7 @@ const registrationLimiter = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (_req, res) => res.status(429).json({ message: 'Too many registration attempts. Please wait 15 minutes before trying again.' }),
 });
 
 app.use('/api/auth/register', registrationLimiter);

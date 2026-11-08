@@ -34,26 +34,32 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
     const email = data.email.toLowerCase();
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      if (!existing.isVerified) {
-        const verificationToken = randomToken();
-        const hashedVerificationToken = hashToken(verificationToken);
-        await prisma.user.update({
-          where: { id: existing.id },
-          data: {
-            verificationToken: hashedVerificationToken,
-            verificationExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
-          },
-        });
-
-        try {
-          await emailService.sendVerificationEmail({ email: existing.email, token: verificationToken });
-        } catch (error) {
-          console.error('Registration verification email could not be sent.', error);
-          return res.status(503).json({ message: verificationDeliveryErrorMessage(error) });
-        }
+      if (existing.role !== 'PATIENT') {
+        return res.status(409).json({ message: 'This email belongs to an existing staff account. Use a different email to register as a patient.' });
       }
 
-      return res.status(201).json({ message: 'If registration is available for this email, a verification link will be sent.' });
+      if (existing.isVerified) {
+        return res.status(409).json({ message: 'An account with this email already exists. Log in or use a different email.' });
+      }
+
+      const verificationToken = randomToken();
+      const hashedVerificationToken = hashToken(verificationToken);
+      await prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          verificationToken: hashedVerificationToken,
+          verificationExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        },
+      });
+
+      try {
+        await emailService.sendVerificationEmail({ email: existing.email, token: verificationToken });
+      } catch (error) {
+        console.error('Registration verification email could not be sent.', error);
+        return res.status(503).json({ message: verificationDeliveryErrorMessage(error) });
+      }
+
+      return res.status(200).json({ message: 'Your account is waiting for email verification. We sent a new verification link.' });
     }
 
     const passwordHash = await bcrypt.hash(data.password, 10);
@@ -80,10 +86,10 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
         return res.status(503).json({ message: verificationDeliveryErrorMessage(error) });
       }
 
-      return res.status(201).json({ message: 'If registration is available for this email, a verification link will be sent.' });
+      return res.status(201).json({ message: 'Registration successful. Check your email and verify your account before logging in.' });
     } catch (error) {
       if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
-        return res.status(201).json({ message: 'If registration is available for this email, a verification link will be sent.' });
+        return res.status(409).json({ message: 'An account with this email already exists. Log in or use a different email.' });
       }
       throw error;
     }

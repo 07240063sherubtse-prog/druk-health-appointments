@@ -17,8 +17,8 @@ export default function Register() {
     setError('');
 
     try {
-      await register(form);
-      setMessage('Registration successful. Please check your email to verify your account.');
+      const result = await register(form);
+      setMessage(result.message || 'Registration successful. Please check your email to verify your account.');
       setTimeout(() => navigate('/login'), 1200);
     } catch (err) {
       const response = err.response?.data;
@@ -44,7 +44,7 @@ export default function Register() {
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Bhutanese phone</label>
-          <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-maroon" placeholder="e.g. +97517123456" required />
+          <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} type="tel" autoComplete="tel" className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-maroon" placeholder="e.g. 17123456 or +975 17123456" required />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Password</label>
